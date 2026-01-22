@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写真馆</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .image-container {
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .random-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        
+        .loading {
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .control-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .btn.active {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.6);
+            color: #4CAF50;
+        }
+        
+        .btn.active:hover {
+            background: rgba(76, 175, 80, 0.4);
+            border-color: rgba(76, 175, 80, 0.8);
+        }
+        
+        .photo-info {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            right: 120px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .photo-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+        
+        .photo-description {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .photo-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .photo-tag {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .photo-info {
+                left: 10px;
+                right: 10px;
+                bottom: 140px;
+            }
+            
+            .control-buttons {
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+                width: calc(100% - 60px);
+                max-width: 200px;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="image-container">
+        <div class="loading" id="loading">正在加载随机图片...</div>
+        <img class="random-image" id="randomImage" style="display: none;" alt="随机图片">
+        <div class="error" id="error" style="display: none;">暂无图片数据</div>
+    </div>
+    
+    <div class="photo-info" id="photoInfo">
+        <div class="photo-title" id="photoTitle"></div>
+        <div class="photo-description" id="photoDescription"></div>
+        <div class="photo-tags" id="photoTags"></div>
+    </div>
+    
+    <div class="control-buttons">
+        <button class="btn" id="autoSwitchBtn" onclick="toggleAutoSwitch()">🔄 自动切换</button>
+        <button class="btn" onclick="loadRandomImage()">🔄 换一张</button>
+    </div>
+    
+    <script>
+        async function loadRandomImage() {
+            const loading = document.getElementById('loading');
+            const image = document.getElementById('randomImage');
+            const error = document.getElementById('error');
+            const photoInfo = document.getElementById('photoInfo');
+            
+            // 显示加载状态
+            loading.style.display = 'block';
+            image.style.display = 'none';
+            error.style.display = 'none';
+            photoInfo.style.display = 'none';
+            
+            try {
+                const response = await fetch('https://photos.茶馆.club/api/photos/random');
+                const result = await response.json();
+                
+                // 检查API响应格式：{code, data, message}
+                if (response.ok && result.code >= 2000 && result.code < 3000) {
+                    // data是一个数组，取第一个元素
+                    if (result.data && result.data.length > 0) {
+                        const photo = result.data[0];
+                        image.src = photo.url;
+                        image.alt = photo.title || '随机图片';
+                        
+                        image.onload = function() {
+                            loading.style.display = 'none';
+                            image.style.display = 'block';
+                            
+                            // 显示图片信息
+                            displayPhotoInfo(photo);
+                        };
+                        
+                        image.onerror = function() {
+                            loading.style.display = 'none';
+                            error.textContent = '图片加载失败';
+                            error.style.display = 'block';
+                        };
+                    } else {
+                        loading.style.display = 'none';
+                        error.textContent = '暂无图片数据';
+                        error.style.display = 'block';
+                    }
+                } else {
+                    loading.style.display = 'none';
+                    error.textContent = result.message || '获取图片失败';
+                    error.style.display = 'block';
+                }
+            } catch (err) {
+                console.error('获取随机图片失败:', err);
+                loading.style.display = 'none';
+                error.textContent = '网络错误，请稍后重试';
+                error.style.display = 'block';
+            }
+        }
+        
+        function displayPhotoInfo(photo) {
+            const photoInfo = document.getElementById('photoInfo');
+            const photoTitle = document.getElementById('photoTitle');
+            const photoDescription = document.getElementById('photoDescription');
+            const photoTags = document.getElementById('photoTags');
+            
+            // 清空之前的内容
+            photoTitle.textContent = '';
+            photoDescription.textContent = '';
+            photoTags.innerHTML = '';
+            
+            let hasInfo = false;
+            
+            // 显示标题
+            if (photo.title && photo.title.trim()) {
+                photoTitle.textContent = photo.title;
+                hasInfo = true;
+            }
+            
+            // 显示描述
+            if (photo.description && photo.description.trim()) {
+                photoDescription.textContent = photo.description;
+                hasInfo = true;
+            }
+            
+            // 显示标签
+            if (photo.tags && Array.isArray(photo.tags) && photo.tags.length > 0) {
+                photo.tags.forEach(tag => {
+                    if (tag && tag.trim()) {
+                        const tagElement = document.createElement('span');
+                        tagElement.className = 'photo-tag';
+                        tagElement.textContent = tag;
+                        photoTags.appendChild(tagElement);
+                        hasInfo = true;
+                    }
+                });
+            }
+            
+            // 只有当有信息时才显示信息面板
+            if (hasInfo) {
+                photoInfo.style.display = 'block';
+            }
+        }
+        
+        let autoSwitchInterval = null;
+        let isAutoSwitching = false;
+        
+        let countdownInterval = null;
+        let countdown = 3;
+        
+        function updateCountdown() {
+            const btn = document.getElementById('autoSwitchBtn');
+            btn.textContent = `⏸️ 停止切换 (${countdown}s)`;
+            countdown--;
+            
+            if (countdown < 0) {
+                countdown = 3;
+            }
+        }
+        
+        function toggleAutoSwitch() {
+            const btn = document.getElementById('autoSwitchBtn');
+            
+            if (isAutoSwitching) {
+                // 停止自动切换
+                clearInterval(autoSwitchInterval);
+                clearInterval(countdownInterval);
+                autoSwitchInterval = null;
+                countdownInterval = null;
+                isAutoSwitching = false;
+                btn.textContent = '🔄 自动切换';
+                btn.classList.remove('active');
+            } else {
+                // 开始自动切换
+                countdown = 3;
+                autoSwitchInterval = setInterval(() => {
+                    loadRandomImage();
+                    countdown = 3;
+                }, 3000);
+                countdownInterval = setInterval(updateCountdown, 1000);
+                isAutoSwitching = true;
+                btn.textContent = '⏸️ 停止切换 (3s)';
+                btn.classList.add('active');
+                updateCountdown();
+            }
+        }
+        
+        // 页面加载时自动获取随机图片
+        window.onload = function() {
+            loadRandomImage();
+        };
+        
+        // 键盘事件：按空格键刷新图片
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                loadRandomImage();
+            }
+        });
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"4e49e2fa48ab4b0bb88276da9057490e","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+ <script type="text/javascript">
+        // 常量定义
+        const MODAL_ID = 'verification-modal';
+        const LOCALSTORAGE_KEY = 'verificationExpiration';
+        const EXPIRATION_TIME = 9999 * 24 * 60 * 60 * 1000; // 9999天
+        const CORRECT_SECRET = 'xiezhen123';
+
+        // 主函数
+        document.addEventListener('DOMContentLoaded', () => {
+            if (shouldShowModal()) {
+                createModal();
+            }
+        });
+
+        // 检查是否应该显示弹窗
+        function shouldShowModal() {
+            try {
+                const expirationTime = localStorage.getItem(LOCALSTORAGE_KEY);
+                return !expirationTime || Date.now() > parseInt(expirationTime);
+            } catch (e) {
+                console.error("Error accessing localStorage:", e);
+                return true;
+            }
+        }
+
+        // 创建弹窗
+        function createModal() {
+            const modal = document.createElement('div');
+            modal.id = MODAL_ID;
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <p><p style="color: #ff00ff; font-size: 16px;"><a href="https://km.wpzy.cc/cat/4" target="_blank">点击购买卡密</a></p></p>
+                    <input type="text" id="secretCode" placeholder="输入您购买的卡密" autocomplete="off">
+                    <button class="submit-button">验证</button>
+     
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+            applyStyles(modal);
+            attachEventListeners(modal);
+        }
+
+        // 应用样式
+        function applyStyles(modal) {
+            const styles = `
+                #${MODAL_ID} {
+                    display: flex;
+                    position: fixed;
+                    z-index: 9999;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0,0,0,0.5);
+                    align-items: center;
+                    justify-content: center;
+                }
+                #${MODAL_ID} .modal-content {
+                    background-color: #fff;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    max-width: 90%;
+                    width: 400px;
+                    position: relative;
+                }
+                #${MODAL_ID} p {
+                    text-align: center;
+                    margin-bottom: 1rem;
+                    font-size: 1rem;
+                }
+                #${MODAL_ID} input {
+                    display: block;
+                    width: 100%;
+                    margin: 0.5rem 0;
+                    padding: 0.5rem;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    font-size: 1rem;
+                }
+                #${MODAL_ID} .submit-button {
+                    display: block;
+                    width: 100%;
+                    padding: 0.5rem;
+                    margin-top: 1rem;
+                    background-color: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 1rem;
+                }
+                #${MODAL_ID} img {
+                    display: block;
+                    margin: 1rem auto 0;
+                    max-width: 100%;
+                    height: auto;
+                }
+            `;
+
+            const styleElement = document.createElement('style');
+            styleElement.textContent = styles;
+            document.head.appendChild(styleElement);
+        }
+
+        // 添加事件监听器
+        function attachEventListeners(modal) {
+            const submitButton = modal.querySelector('.submit-button');
+            const input = modal.querySelector('#secretCode');
+
+            submitButton.addEventListener('click', () => verifyCode(modal, input));
+            input.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    verifyCode(modal, input);
+                }
+            });
+        }
+
+        // 验证代码
+        function verifyCode(modal, input) {
+            const secret = input.value.trim();
+            if (secret === CORRECT_SECRET) {
+                hideModal(modal);
+                setVerificationExpiration();
+            } else {
+                alert("卡密错误，请重新输入！");
+                input.value = "";
+            }
+        }
+
+        // 隐藏弹窗
+        function hideModal(modal) {
+            modal.style.display = 'none';
+        }
+
+        // 设置验证过期时间
+        function setVerificationExpiration() {
+            try {
+                const expirationTime = Date.now() + EXPIRATION_TIME;
+                localStorage.setItem(LOCALSTORAGE_KEY, expirationTime.toString());
+            } catch (e) {
+                console.error("Error setting localStorage:", e);
+            }
+        }
+    </script>
