@@ -1,727 +1,1025 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>写真馆</title>
+    <title>无朋写真 · 专辑馆</title>
     <style>
+        /* ========== 全局样式 & 主题变量 ========== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        /* 亮色模式变量 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
         :root {
-            --bg-color: #f8faff;
-            --header-bg: #ffffff;
-            --text-primary: #1e2b3d;
-            --text-secondary: #5d7296;
-            --border-color: #eef2f8;
-            --card-bg: #ffffff;
-            --card-border: #ecf0f8;
-            --btn-primary-bg: #1f2f4a;
-            --btn-primary-text: #ffffff;
-            --btn-secondary-bg: #ffffff;
-            --btn-secondary-text: #1f2f4a;
-            --btn-secondary-border: #d9e3f5;
-            --count-bg: #f0f5ff;
-            --shadow-color: rgba(0, 0, 0, 0.02);
-            --hover-shadow: rgba(50, 70, 120, 0.12);
-            --footer-border: #e7eef9;
-            --link-color: #2d3f5e;
-            --link-hover: #4f6b9c;
+            --text-color: #2a2a2a;
+            --card-bg: rgba(255, 255, 255, 0.6);
+            --header-bg: rgba(255, 255, 255, 0.5);
+            --btn-bg: rgba(255, 255, 255, 0.2);
+            --btn-hover: rgba(255, 255, 255, 0.3);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+            --footer-color: #666;
+            --album-meta-bg: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            --card-border: rgba(255, 255, 255, 0.3);
+            --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            --theme-btn-bg: transparent;
+            --theme-btn-hover: rgba(255, 255, 255, 0.1);
+            --quote-color: #666;
+            --overlay-bg: rgba(255, 255, 255, 0.5);
         }
 
-        /* 深色模式 - 纯黑背景 */
         [data-theme="dark"] {
-            --bg-color: #000000;
-            --header-bg: #0a0a0a;
-            --text-primary: #ffffff;
-            --text-secondary: #cccccc;
-            --border-color: #222222;
-            --card-bg: #111111;
-            --card-border: #333333;
-            --btn-primary-bg: #333333;
-            --btn-primary-text: #ffffff;
-            --btn-secondary-bg: #1a1a1a;
-            --btn-secondary-text: #ffffff;
-            --btn-secondary-border: #444444;
-            --count-bg: #222222;
-            --shadow-color: rgba(255, 255, 255, 0.05);
-            --hover-shadow: rgba(255, 255, 255, 0.1);
-            --footer-border: #222222;
-            --link-color: #ffffff;
-            --link-hover: #cccccc;
+            --text-color: #f0f0f0;
+            --card-bg: rgba(30, 30, 30, 0.5);
+            --header-bg: rgba(10, 10, 10, 0.6);
+            --btn-bg: rgba(255, 255, 255, 0.08);
+            --btn-hover: rgba(255, 255, 255, 0.12);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --footer-color: #aaa;
+            --album-meta-bg: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --card-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            --theme-btn-bg: transparent;
+            --theme-btn-hover: rgba(255, 255, 255, 0.08);
+            --quote-color: #aaa;
+            --overlay-bg: rgba(0, 0, 0, 0.5);
+        }
+
+        /* 必应背景图片 - 全屏固定 */
+        .bing-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1s ease;
+            opacity: 0.5;
+        }
+
+        /* 遮罩层，用于控制整体透明度，同时确保文字可读 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay-bg);
+            z-index: -1;
+            backdrop-filter: blur(2px);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            line-height: 1.5;
-            height: 100vh;
+            background-color: transparent;
+            color: var(--text-color);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-
-        /* 顶部导航 */
-        .header {
-            background: var(--header-bg);
-            box-shadow: 0 2px 15px var(--shadow-color);
-            padding: 0.8rem 2rem;
-            border-bottom: 1px solid var(--border-color);
-            flex-shrink: 0;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
-        }
-
-        .nav-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .nav-link {
-            color: var(--link-color);
-            text-decoration: none;
-            font-size: 1.1rem;
-            font-weight: 500;
             transition: color 0.2s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--link-hover);
-        }
-
-        .theme-toggle {
-            background: var(--btn-secondary-bg);
-            border: 1px solid var(--btn-secondary-border);
-            color: var(--btn-secondary-text);
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 1.3rem;
-            margin-left: 1rem;
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.05);
-            background: var(--count-bg);
-        }
-
-        /* 主内容区域 */
-        .main {
-            flex: 1;
-            padding: 2rem 2rem 0.5rem 2rem;
-            overflow-y: auto;
-            min-height: 0;
-            scrollbar-width: thin;
-            scrollbar-color: var(--text-secondary) var(--bg-color);
+            line-height: 1.6;
             position: relative;
         }
 
-        .main::-webkit-scrollbar {
-            width: 6px;
-        }
-        .main::-webkit-scrollbar-track {
-            background: var(--bg-color);
-        }
-        .main::-webkit-scrollbar-thumb {
-            background: var(--text-secondary);
-            border-radius: 10px;
-        }
-
-        /* 首页视图 */
-        .home-view {
-            display: block;
-        }
-
-        .home-view.hidden {
-            display: none;
-        }
-
-        /* 专辑视图 */
-        .album-view {
-            display: none;
-            height: 100%;
-        }
-
-        .album-view.active {
+        /* ========== 头部 - 固定导航栏 ========== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background-color: var(--header-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 0.8rem 2rem;
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
         }
 
-        /* 专辑头部 */
-        .album-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-color);
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 0 0 auto;
         }
 
-        .album-title {
-            font-size: 2rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            word-break: break-word;
-        }
-
-        .album-meta {
-            color: var(--text-secondary);
-            font-size: 1rem;
-        }
-
-        /* 专辑内照片网格 */
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.2rem;
-            padding-bottom: 1rem;
-        }
-
-        @media (max-width: 640px) {
-            .photo-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.8rem;
-            }
-        }
-
-        .photo-card {
-            aspect-ratio: 2/3;
-            border-radius: 16px;
-            overflow: hidden;
+        .site-title {
+            font-size: 1.4rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
+            background: linear-gradient(135deg, currentColor 0%, #999 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
             cursor: pointer;
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            transition: 0.2s;
+            transition: opacity 0.2s ease;
         }
 
-        .photo-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px var(--hover-shadow);
+        .site-title:hover {
+            opacity: 0.8;
         }
 
-        .photo-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* 每日一言 - 中间区域 */
+        .quote-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 20px;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        /* 专辑网格 - 首页 */
-        .album-grid {
+        .daily-quote {
+            font-size: 0.8rem;
+            color: var(--quote-color);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+            cursor: default;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .daily-quote:hover {
+            opacity: 1;
+        }
+
+        .back-btn {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            background: var(--btn-bg);
+            color: var(--text-color);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s ease;
+            border: none;
+            font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
+        }
+        .back-btn:hover {
+            background: var(--btn-hover);
+            transform: translateX(-2px);
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 0 0 auto;
+        }
+
+        .btn {
+            background: var(--btn-bg);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: none;
+            font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
+        }
+
+        .btn:hover {
+            background: var(--btn-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* 日夜切换按钮 - 完全透明背景 */
+        .theme-btn {
+            font-size: 1.2rem;
+            padding: 6px 12px;
+            background: var(--theme-btn-bg);
+            border-radius: 25px;
+            backdrop-filter: blur(0);
+            -webkit-backdrop-filter: blur(0);
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            background: var(--theme-btn-hover);
+            transform: scale(0.95);
+        }
+
+        /* 换一批按钮 - 完全透明背景 */
+        #refreshBatch {
+            background: transparent;
+            padding: 6px 16px;
+        }
+        
+        #refreshBatch:hover {
+            background: var(--btn-hover);
+        }
+
+        /* ========== 主内容区 - 为固定头部留出空间 ========== */
+        .main-content {
+            flex: 1;
+            padding: 5rem 2rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 专辑网格 - 更美观的卡片布局 */
+        .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem 1.5rem;
-            margin-bottom: 2rem;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
-        @media (max-width: 640px) {
-            .album-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1rem;
-            }
-        }
-        @media (min-width: 641px) and (max-width: 900px) {
-            .album-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        @media (min-width: 901px) and (max-width: 1200px) {
-            .album-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        @media (min-width: 1201px) {
-            .album-grid {
-                grid-template-columns: repeat(5, 1fr);
-            }
-        }
-
-        /* 专辑卡片 */
+        /* 专辑卡片 - 毛玻璃效果，圆角8px */
         .album-card {
             background: var(--card-bg);
-            border-radius: 24px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 10px 25px var(--shadow-color);
-            transition: 0.25s ease;
+            box-shadow: var(--card-shadow);
             border: 1px solid var(--card-border);
             cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            transform: translateY(0);
         }
 
         .album-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 25px 40px var(--hover-shadow);
-            border-color: var(--text-secondary);
+            box-shadow: 0 25px 40px rgba(0,0,0,0.15);
+            border-color: rgba(255,255,255,0.2);
         }
 
-        .cover-container {
+        .album-cover-wrapper {
+            position: relative;
             width: 100%;
             aspect-ratio: 3 / 4;
             overflow: hidden;
-            background: var(--count-bg);
         }
 
-        .cover-container img {
+        .album-cover {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s ease;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        .album-card:hover .cover-container img {
+        .album-card:hover .album-cover {
             transform: scale(1.05);
         }
 
-        .album-info {
-            padding: 1rem 1rem 1.2rem;
+        .album-meta {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--album-meta-bg);
+            color: white;
+            padding: 20px 15px 15px;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            transform: translateY(0);
+            transition: all 0.3s ease;
         }
 
         .album-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.3rem;
+            font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 70%;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-family: 'Inter', system-ui, sans-serif;
         }
 
-        .album-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .photo-count {
-            background: var(--count-bg);
-            padding: 0.2rem 0.8rem;
+        .album-count {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            padding: 4px 12px;
             border-radius: 30px;
-        }
-
-        /* 加载更多按钮 */
-        .action-bar {
-            display: flex;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-
-        .load-more-btn {
-            background: var(--btn-secondary-bg);
-            border: 1px solid var(--btn-secondary-border);
-            color: var(--btn-secondary-text);
-            padding: 0.9rem 3.5rem;
-            border-radius: 60px;
-            font-size: 1.1rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            display: inline-flex;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* 专辑详情页样式 */
+        .album-header {
+            display: flex;
             align-items: center;
-            gap: 0.8rem;
+            gap: 15px;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(128,128,128,0.2);
+        }
+        .album-header h2 {
+            font-size: 1.5rem;
+            font-weight: 400;
+            flex: 1;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .photo-item {
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 3 / 4;
             cursor: pointer;
-            transition: 0.2s;
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+            background: var(--card-bg);
+            backdrop-filter: blur(5px);
         }
 
-        .load-more-btn:hover {
-            background: var(--count-bg);
-            border-color: var(--text-secondary);
+        .photo-item:hover {
             transform: scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            border-color: rgba(255,255,255,0.2);
         }
 
-        /* 返回顶部按钮 */
-        .back-to-top {
-            position: fixed;
-            bottom: 80px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--btn-primary-bg);
-            color: white;
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.05);
+        }
+
+        /* 加载更多区域 - 底部中间，透明度增大 */
+        .load-more-container {
+            display: flex;
+            justify-content: center;
+            padding: 2.5rem 0 1.5rem;
+            width: 100%;
+        }
+
+        #loadMoreAlbumsBtn {
+            background: var(--btn-bg);
+            color: var(--text-color);
+            padding: 10px 30px;
+            font-size: 0.9rem;
+            font-weight: 400;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            letter-spacing: 0.5px;
             border: none;
+            opacity: 0.8;
+            font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
+        }
+
+        #loadMoreAlbumsBtn:hover:not(:disabled) {
+            background: var(--btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            opacity: 1;
+        }
+
+        #loadMoreAlbumsBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #loadMoreAlbumsBtn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        /* ========== 返回顶部按钮 - 无圆圈，只保留箭头 ========== */
+        #backToTop {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            font-size: 24px;
+            font-weight: 300;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
             opacity: 0;
             visibility: hidden;
+            transition: all 0.3s ease;
             z-index: 100;
+            border: none;
+            background: none;
+            color: var(--text-color);
+            padding: 0;
+            width: auto;
+            height: auto;
+            box-shadow: none;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .back-to-top.visible {
-            opacity: 1;
+        #backToTop.visible {
+            opacity: 0.7;
             visibility: visible;
         }
 
-        .back-to-top:hover {
+        #backToTop:hover {
+            opacity: 1;
             transform: translateY(-5px);
-            background: var(--link-hover);
+            background: none;
+            box-shadow: none;
         }
 
-        /* 页脚 */
+        /* ========== 底部 - 与页面融为一体，无分割线 ========== */
         .footer {
             text-align: center;
-            padding: 1rem;
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            border-top: 1px solid var(--footer-border);
-            background: var(--header-bg);
-            flex-shrink: 0;
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            padding: 2rem 2rem 2.5rem;
+            color: var(--footer-color);
+            font-size: 0.85rem;
+            font-weight: 300;
+            background: transparent;
+            margin-top: 0;
+            border-top: none;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
-        .footer span {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .footer-note {
-            margin-left: 0.5rem;
-            font-weight: normal;
-            color: var(--text-secondary);
-        }
-
-        /* 灯箱 */
-        .lightbox {
+        /* ========== 模态框 (查看大图) ========== */
+        .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 20, 35, 0.95);
-            backdrop-filter: blur(8px);
+            z-index: 200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            backdrop-filter: blur(15px);
             align-items: center;
             justify-content: center;
-            z-index: 200;
-            cursor: zoom-out;
+            padding: 2rem;
         }
-        .lightbox.active { display: flex; }
-        .lightbox img {
-            max-width: 90vw;
-            max-height: 85vh;
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            max-width: 95vw;
+            max-height: 95vh;
             object-fit: contain;
-            border-radius: 16px;
+            border-radius: 8px;
+            box-shadow: 0 0 40px rgba(255,255,255,0.1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 25px;
+            right: 35px;
+            color: white;
+            font-size: 45px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            opacity: 0.7;
+            transition: 0.2s;
+        }
+        .modal-close:hover {
+            opacity: 1;
+            transform: rotate(90deg);
         }
 
-        /* 骨架屏 */
-        .skeleton-card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            overflow: hidden;
-            border: 1px solid var(--card-border);
+        /* 加载提示 */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: var(--footer-color);
+            grid-column: 1 / -1;
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-        .skeleton-cover {
-            width: 100%;
-            aspect-ratio: 3/4;
-            background: linear-gradient(110deg, var(--count-bg) 30%, var(--card-bg) 50%, var(--count-bg) 70%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .header {
+                padding: 0.7rem 1rem;
+            }
+            .site-title {
+                font-size: 1.2rem;
+            }
+            .quote-container {
+                padding: 0 10px;
+            }
+            .daily-quote {
+                font-size: 0.7rem;
+            }
+            .btn {
+                padding: 5px 10px;
+                font-size: 0.8rem;
+            }
+            .theme-btn {
+                font-size: 1.1rem;
+                padding: 5px 10px;
+            }
+            .main-content {
+                padding: 4.5rem 1rem 1rem;
+            }
+            .gallery {
+                gap: 1.2rem;
+            }
+            #backToTop {
+                font-size: 22px;
+                bottom: 20px;
+                right: 20px;
+            }
+            .footer {
+                padding: 1.5rem 1rem 2rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 必应每日一图背景 - 透明度50% -->
+    <div class="bing-background" id="bingBackground" style="background-image: url('https://bing.com/th?id=OHR.MedievalRocamadour_EN-CN10639994916_UHD.jpg');"></div>
+    <!-- 遮罩层，增强文字可读性 -->
+    <div class="overlay"></div>
 
+    <!-- 头部 - 固定导航栏 -->
     <header class="header">
-        <div class="nav-container">
-            <div class="logo" id="logo">写真馆</div>
-            <div class="nav-links">
-                <a href="https://wpzy.cc" class="nav-link" target="_blank" rel="noopener noreferrer">论坛</a>
-                <a href="https://km.wpzy.cc" class="nav-link" target="_blank" rel="noopener noreferrer">商城</a>
-                <div class="theme-toggle" id="themeToggle" title="切换深色/白天模式">🌓</div>
-            </div>
+        <div class="header-left">
+            <button class="back-btn" id="backBtn">← 返回</button>
+            <span class="site-title" id="homeLink">无朋写真馆</span>
+        </div>
+        
+        <!-- 每日一言 - 中间区域 -->
+        <div class="quote-container">
+            <div class="daily-quote" id="dailyQuote">一图一世界，一念一菩提</div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn theme-btn" id="themeToggle">☀️</button>
+            <button class="btn" id="refreshBatch">换一批</button>
         </div>
     </header>
 
-    <div class="main" id="mainContent">
-        <!-- 首页视图 -->
-        <div class="home-view" id="homeView">
-            <div class="album-grid" id="albumGrid"></div>
-            <div class="action-bar">
-                <button class="load-more-btn" id="loadMoreBtn">+ 加载更多</button>
-            </div>
-        </div>
+    <!-- 主内容区域 (动态渲染) -->
+    <main class="main-content" id="mainContent"></main>
 
-        <!-- 专辑视图 -->
-        <div class="album-view" id="albumView">
-            <div class="album-header">
-                <h1 class="album-title" id="detailAlbumTitle"></h1>
-                <div class="album-meta">
-                    <span id="detailAlbumId"></span> · <span id="detailTotalPhotos"></span>
-                </div>
-            </div>
-            <div class="photo-grid" id="detailGrid"></div>
-        </div>
-    </div>
-
-    <!-- 返回顶部按钮 -->
-    <button class="back-to-top" id="backToTop" title="返回顶部">↑</button>
-
+    <!-- 底部版权 - 与页面融为一体，无分割线 -->
     <footer class="footer">
-        <span>© AQ写真</span>
-        <span class="footer-note">仅限学习交流</span>
+        © 无朋写真 · 仅限学习交流
     </footer>
 
-    <!-- 灯箱 -->
-    <div class="lightbox" id="lightbox">
-        <img src="" alt="" id="lightboxImg">
+    <!-- 返回顶部按钮 - 无圆圈，只保留箭头 -->
+    <button id="backToTop" title="返回顶部">↑</button>
+
+    <!-- 图片大图模态框 -->
+    <div id="imageModal" class="modal">
+        <span class="modal-close" id="modalClose">&times;</span>
+        <img class="modal-content" id="modalImage" src="" alt="原始尺寸图片">
     </div>
 
     <script>
         (function() {
-            const ALBUM_API = 'https://xrw.christin3.com/api/random-album';
+            // ========== 配置 ==========
+            // 使用原来的API地址
+            const API_ALBUM = 'https://xrw.christin3.com/api/random-album';
             
-            let albumsList = [];
-            let currentAlbum = null;
-            
+            const QUOTE_API = 'https://v1.hitokoto.cn/?c=i&c=d&c=k&c=j&encode=json';
+            // 使用更可靠的必应壁纸API
+            const BING_API = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN';
+            // 使用代理解决跨域问题
+            const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+            const ALBUMS_PER_PAGE = 20;
+            const LOAD_MORE_COUNT = 8;
+
+            // 状态管理
+            let currentAlbums = [];
+            let currentView = 'albums';
+            let currentAlbumData = null;
+            let albumsOffset = 0;
+            let isLoadingMore = false;
+
             // DOM 元素
-            const albumGrid = document.getElementById('albumGrid');
-            const loadMoreBtn = document.getElementById('loadMoreBtn');
-            const logo = document.getElementById('logo');
-            const homeView = document.getElementById('homeView');
-            const albumView = document.getElementById('albumView');
-            const detailAlbumTitle = document.getElementById('detailAlbumTitle');
-            const detailAlbumId = document.getElementById('detailAlbumId');
-            const detailTotalPhotos = document.getElementById('detailTotalPhotos');
-            const detailGrid = document.getElementById('detailGrid');
-            const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightboxImg');
+            const mainContent = document.getElementById('mainContent');
+            const backBtn = document.getElementById('backBtn');
+            const refreshBtn = document.getElementById('refreshBatch');
             const themeToggle = document.getElementById('themeToggle');
             const backToTop = document.getElementById('backToTop');
-            const mainContent = document.getElementById('mainContent');
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            const modalClose = document.getElementById('modalClose');
+            const homeLink = document.getElementById('homeLink');
+            const dailyQuote = document.getElementById('dailyQuote');
+            const bingBackground = document.getElementById('bingBackground');
 
-            // 深色/白天模式切换
-            function initTheme() {
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌓';
+            // 备用壁纸列表（当API失败时使用）
+            const fallbackWallpapers = [
+                'https://bing.com/th?id=OHR.MedievalRocamadour_EN-CN10639994916_UHD.jpg',
+                'https://bing.com/th?id=OHR.PoinsettiaDay_EN-CN8958848812_UHD.jpg',
+                'https://bing.com/th?id=OHR.BorealOwl_EN-CN8204991647_UHD.jpg',
+                'https://bing.com/th?id=OHR.Castelmezzano_EN-CN8038156678_UHD.jpg',
+                'https://bing.com/th?id=OHR.NorwayMoose_EN-CN7905897383_UHD.jpg'
+            ];
+
+            // ========== 处理图片URL，使用代理 ==========
+            // 处理专辑中的图片URL，将telegra.ph的图片替换为代理地址
+            function processImageUrl(url) {
+                if (url && url.includes('telegra.ph')) {
+                    // 替换为代理地址
+                    return url.replace('https://telegra.ph', 'http://103.178.56.182/telegraph');
+                }
+                return url;
             }
 
+            // ========== 获取必应每日一图 ==========
+            async function fetchBingImage() {
+                try {
+                    // 尝试直接获取bing图片（使用代理解决跨域）
+                    const response = await fetch(PROXY_URL + encodeURIComponent(BING_API));
+                    const data = await response.json();
+                    
+                    if (data && data.images && data.images[0]) {
+                        const imageUrl = 'https://www.bing.com' + data.images[0].url;
+                        console.log('获取到必应图片:', imageUrl);
+                        
+                        // 预加载图片
+                        const img = new Image();
+                        img.onload = function() {
+                            bingBackground.style.backgroundImage = `url('${imageUrl}')`;
+                            console.log('图片加载成功');
+                        };
+                        img.onerror = function() {
+                            console.log('图片加载失败，使用备用图片');
+                            useRandomFallback();
+                        };
+                        img.src = imageUrl;
+                    } else {
+                        console.log('API返回数据格式错误，使用备用图片');
+                        useRandomFallback();
+                    }
+                } catch (error) {
+                    console.warn('获取必应图片失败，使用备用图片', error);
+                    useRandomFallback();
+                }
+            }
+
+            // 使用随机备用壁纸
+            function useRandomFallback() {
+                const randomIndex = Math.floor(Math.random() * fallbackWallpapers.length);
+                const fallbackUrl = fallbackWallpapers[randomIndex];
+                console.log('使用备用壁纸:', fallbackUrl);
+                
+                const img = new Image();
+                img.onload = function() {
+                    bingBackground.style.backgroundImage = `url('${fallbackUrl}')`;
+                };
+                img.src = fallbackUrl;
+            }
+
+            // 先设置一个默认图片，让页面有背景
+            function setInitialBackground() {
+                bingBackground.style.backgroundImage = "url('https://bing.com/th?id=OHR.MedievalRocamadour_EN-CN10639994916_UHD.jpg')";
+            }
+
+            // ========== 获取每日一言 ==========
+            async function fetchDailyQuote() {
+                try {
+                    const response = await fetch(QUOTE_API);
+                    const data = await response.json();
+                    if (data && data.hitokoto) {
+                        dailyQuote.textContent = `“${data.hitokoto}”`;
+                    } else {
+                        dailyQuote.textContent = '“一图一世界，一念一菩提”';
+                    }
+                } catch (error) {
+                    console.warn('获取每日一言失败', error);
+                    const defaultQuotes = [
+                        '“一图一世界，一念一菩提”',
+                        '“光影之间，定格永恒”',
+                        '“镜头之下，皆是故事”',
+                        '“用影像记录时光”',
+                        '“每一帧都是热爱”'
+                    ];
+                    const randomIndex = Math.floor(Math.random() * defaultQuotes.length);
+                    dailyQuote.textContent = defaultQuotes[randomIndex];
+                }
+            }
+
+            // ========== 工具函数 ==========
+            async function fetchAlbum() {
+                try {
+                    const res = await fetch(API_ALBUM);
+                    return await res.json();
+                } catch (e) {
+                    console.warn('获取专辑失败', e);
+                    return null;
+                }
+            }
+
+            // 获取一批不重复的专辑
+            async function fetchAlbumsBatch(count) {
+                const albums = [];
+                const ids = new Set();
+                let attempts = 0;
+                const maxAttempts = count * 3;
+
+                while (albums.length < count && attempts < maxAttempts) {
+                    const album = await fetchAlbum();
+                    attempts++;
+                    if (album && album.id && !ids.has(album.id)) {
+                        ids.add(album.id);
+                        albums.push(album);
+                    }
+                }
+                return albums;
+            }
+
+            // ========== 渲染函数 ==========
+            // 渲染专辑列表首页
+            function renderAlbums(albums, append = false) {
+                if (!append) {
+                    mainContent.innerHTML = '';
+                }
+
+                if (!albums || albums.length === 0) {
+                    if (!append) {
+                        mainContent.innerHTML += '<div class="loading">暂无专辑，请稍后重试</div>';
+                    }
+                    return;
+                }
+
+                // 如果是追加模式，获取现有的gallery，否则创建新的
+                let gallery = document.querySelector('.gallery');
+                if (!gallery) {
+                    gallery = document.createElement('div');
+                    gallery.className = 'gallery';
+                    mainContent.appendChild(gallery);
+                }
+
+                albums.forEach(album => {
+                    if (!album || !album.photos || album.photos.length === 0) return;
+
+                    // 处理封面图片URL - 使用代理
+                    const coverUrl = processImageUrl(album.photos[0]);
+                    
+                    const card = document.createElement('div');
+                    card.className = 'album-card';
+                    card.dataset.albumId = album.id;
+
+                    card.innerHTML = `
+                        <div class="album-cover-wrapper">
+                            <img class="album-cover" src="${coverUrl}?_t=${Date.now()}" alt="${album.title || '专辑'}" loading="lazy">
+                            <div class="album-meta">
+                                <span class="album-title">${album.title || '无题'}</span>
+                                <span class="album-count">${album.total_photos || album.photos.length}</span>
+                            </div>
+                        </div>
+                    `;
+
+                    card.addEventListener('click', () => showAlbumDetail(album));
+                    gallery.appendChild(card);
+                });
+
+                // 更新或创建加载更多按钮
+                let loadMoreDiv = document.querySelector('.load-more-container');
+                if (!loadMoreDiv) {
+                    loadMoreDiv = document.createElement('div');
+                    loadMoreDiv.className = 'load-more-container';
+                    mainContent.appendChild(loadMoreDiv);
+                }
+                
+                loadMoreDiv.innerHTML = `<button id="loadMoreAlbumsBtn">加载更多</button>`;
+                
+                const loadMoreBtn = document.getElementById('loadMoreAlbumsBtn');
+                if (loadMoreBtn) {
+                    loadMoreBtn.addEventListener('click', loadMoreAlbums);
+                    loadMoreBtn.disabled = false;
+                }
+            }
+
+            // 渲染专辑详情
+            function renderAlbumDetail(album) {
+                if (!album || !album.photos) return;
+
+                // 处理所有图片URL - 使用代理
+                const processedPhotos = album.photos.map(url => processImageUrl(url));
+
+                const html = `
+                    <div class="album-header">
+                        <h2>${album.title || '无题'} · 共${album.total_photos || album.photos.length}张</h2>
+                    </div>
+                    <div class="photo-grid">
+                        ${processedPhotos.map(url => `
+                            <div class="photo-item">
+                                <img src="${url}?_t=${Date.now()}" alt="" loading="lazy">
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                mainContent.innerHTML = html;
+
+                // 为每张图片添加点击查看大图事件 - 使用代理后的URL
+                document.querySelectorAll('.photo-item').forEach((item, index) => {
+                    item.addEventListener('click', () => {
+                        modalImg.src = processedPhotos[index]; // 使用已经处理过的URL
+                        modal.classList.add('show');
+                    });
+                });
+            }
+
+            // ========== 页面切换 ==========
+            async function showAlbumDetail(album) {
+                currentView = 'album-detail';
+                currentAlbumData = album;
+                backBtn.style.display = 'flex';
+                refreshBtn.style.display = 'none';
+                renderAlbumDetail(album);
+                window.scrollTo(0, 0);
+            }
+
+            function showAlbumsView() {
+                currentView = 'albums';
+                backBtn.style.display = 'none';
+                refreshBtn.style.display = 'flex';
+                renderAlbums(currentAlbums);
+            }
+
+            // ========== 主页功能 ==========
+            function goToHome() {
+                if (currentView !== 'albums') {
+                    showAlbumsView();
+                } else {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+
+            // ========== 数据加载 ==========
+            async function loadInitialAlbums() {
+                mainContent.innerHTML = '<div class="loading">加载专辑中...</div>';
+                const albums = await fetchAlbumsBatch(ALBUMS_PER_PAGE);
+                currentAlbums = albums;
+                albumsOffset = albums.length;
+                renderAlbums(albums);
+            }
+
+            async function loadMoreAlbums() {
+                if (isLoadingMore) return;
+                
+                const btn = document.getElementById('loadMoreAlbumsBtn');
+                if (btn) {
+                    btn.disabled = true;
+                    btn.textContent = '加载中...';
+                }
+                
+                isLoadingMore = true;
+
+                try {
+                    const newAlbums = await fetchAlbumsBatch(LOAD_MORE_COUNT);
+                    if (newAlbums.length > 0) {
+                        currentAlbums = [...currentAlbums, ...newAlbums];
+                        albumsOffset += newAlbums.length;
+                        renderAlbums(newAlbums, true);
+                    } else {
+                        alert('没有更多专辑了');
+                        if (btn) {
+                            btn.textContent = '没有更多';
+                            btn.disabled = true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载更多失败', error);
+                    if (btn) {
+                        btn.textContent = '加载更多';
+                        btn.disabled = false;
+                    }
+                } finally {
+                    isLoadingMore = false;
+                }
+            }
+
+            async function refreshAlbums() {
+                mainContent.innerHTML = '<div class="loading">刷新中...</div>';
+                const albums = await fetchAlbumsBatch(ALBUMS_PER_PAGE);
+                currentAlbums = albums;
+                albumsOffset = albums.length;
+                renderAlbums(albums);
+            }
+
+            // ========== 主题切换 ==========
+            function getCurrentTheme() {
+                return document.documentElement.getAttribute('data-theme') || 'light';
+            }
+            function setTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                themeToggle.textContent = theme === 'dark' ? '🌙' : '☀️';
+            }
             function toggleTheme() {
-                const currentTheme = document.documentElement.getAttribute('data-theme');
-                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                document.documentElement.setAttribute('data-theme', newTheme);
-                localStorage.setItem('theme', newTheme);
-                themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌓';
+                const current = getCurrentTheme();
+                setTheme(current === 'dark' ? 'light' : 'dark');
             }
 
-            themeToggle.addEventListener('click', toggleTheme);
-            initTheme();
-
-            // 返回顶部功能
-            function checkScroll() {
-                if (mainContent.scrollTop > 300) {
+            // ========== 返回顶部功能 ==========
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
                     backToTop.classList.add('visible');
                 } else {
                     backToTop.classList.remove('visible');
                 }
-            }
+            });
 
-            function scrollToTop() {
-                mainContent.scrollTo({
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
                 });
-            }
-
-            mainContent.addEventListener('scroll', checkScroll);
-            backToTop.addEventListener('click', scrollToTop);
-
-            // 根据屏幕尺寸计算合适的加载数量
-            function getLoadCount() {
-                const width = window.innerWidth;
-                if (width <= 640) return 8;
-                if (width <= 900) return 12;
-                if (width <= 1200) return 16;
-                return 20;
-            }
-
-            // 加载多个专辑
-            async function loadMultipleAlbums(count = 12, append = false) {
-                if (!append) {
-                    showSkeletons(count);
-                }
-                
-                try {
-                    const promises = [];
-                    for (let i = 0; i < count; i++) {
-                        promises.push(fetch(ALBUM_API).then(res => res.json()).catch(() => null));
-                    }
-                    
-                    const results = await Promise.all(promises);
-                    const validAlbums = results.filter(album => album && album.photos && album.photos.length > 0);
-                    
-                    if (append) {
-                        albumsList = [...albumsList, ...validAlbums];
-                    } else {
-                        albumsList = validAlbums;
-                    }
-                    
-                    renderAlbumGrid();
-                    
-                } catch (error) {
-                    console.error('加载失败:', error);
-                    if (!append) {
-                        albumGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:3rem; color: var(--text-secondary);">❌ 加载失败，请刷新页面重试</div>`;
-                    }
-                }
-            }
-
-            // 显示骨架屏
-            function showSkeletons(count) {
-                let skeletons = '';
-                for (let i = 0; i < count; i++) {
-                    skeletons += `<div class="skeleton-card"><div class="skeleton-cover"></div></div>`;
-                }
-                albumGrid.innerHTML = skeletons;
-            }
-
-            // 渲染首页网格
-            function renderAlbumGrid() {
-                if (albumsList.length === 0) {
-                    albumGrid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:3rem; color: var(--text-secondary);">点击「随机刷新」开始</div>`;
-                    return;
-                }
-
-                let gridHtml = '';
-                albumsList.forEach((album, index) => {
-                    const coverUrl = album.photos?.[0] || album.cover || '';
-                    const title = album.title?.trim() || '无题';
-                    const total = album.total_photos ?? album.photos?.length ?? 0;
-                    
-                    gridHtml += `
-                        <div class="album-card" data-album-index="${index}">
-                            <div class="cover-container">
-                                <img src="${coverUrl}" alt="${title}" loading="lazy"
-                                    onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'300\' height=\'400\' viewBox=\'0 0 300 400\'%3E%3Crect width=\'300\' height=\'400\' fill=\'%23f5f0fc\'/%3E%3C/svg%3E';">
-                            </div>
-                            <div class="album-info">
-                                <div class="album-title" title="${title}">${title}</div>
-                                <div class="album-meta">
-                                    <span class="photo-count">📷 ${total}</span>
-                                    <span>ID: ${album.id}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                albumGrid.innerHTML = gridHtml;
-            }
-
-            // 显示专辑详情（覆盖首页）
-            function showAlbumDetail(album) {
-                currentAlbum = album;
-                
-                // 更新专辑头部
-                detailAlbumTitle.textContent = album.title?.trim() || '无题';
-                detailAlbumId.textContent = `ID: ${album.id}`;
-                const total = album.total_photos ?? album.photos?.length ?? 0;
-                detailTotalPhotos.textContent = `${total} 张照片`;
-                
-                // 渲染照片网格
-                let detailHtml = '';
-                if (album.photos && album.photos.length > 0) {
-                    album.photos.forEach((url, index) => {
-                        detailHtml += `
-                            <div class="photo-card" onclick="event.stopPropagation(); window.openLightbox('${url}')">
-                                <img src="${url}" alt="photo-${index+1}" loading="lazy"
-                                    onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'300\' viewBox=\'0 0 200 300\'%3E%3Crect width=\'200\' height=\'300\' fill=\'%23f5f0fc\'/%3E%3C/svg%3E';">
-                            </div>
-                        `;
-                    });
-                }
-                detailGrid.innerHTML = detailHtml;
-                
-                // 切换视图
-                homeView.classList.add('hidden');
-                albumView.classList.add('active');
-                
-                // 滚动到顶部
-                mainContent.scrollTop = 0;
-            }
-
-            // 返回首页
-            function backToHome() {
-                homeView.classList.remove('hidden');
-                albumView.classList.remove('active');
-                currentAlbum = null;
-            }
-
-            // 事件监听
-            albumGrid.addEventListener('click', (e) => {
-                const card = e.target.closest('.album-card');
-                if (!card) return;
-                
-                const index = card.dataset.albumIndex;
-                if (index !== undefined && albumsList[index]) {
-                    showAlbumDetail(albumsList[index]);
-                }
             });
 
-            // 加载更多
-            loadMoreBtn.addEventListener('click', () => {
-                if (!homeView.classList.contains('hidden')) {
-                    const count = Math.floor(getLoadCount() * 0.5);
-                    loadMultipleAlbums(count, true);
-                }
+            // ========== 模态框 ==========
+            modalClose.addEventListener('click', () => modal.classList.remove('show'));
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('show');
             });
-
-            // Logo点击返回首页
-            logo.addEventListener('click', backToHome);
-
-            // 灯箱
-            window.openLightbox = function(src) {
-                lightboxImg.src = src;
-                lightbox.classList.add('active');
-            };
-
-            lightbox.addEventListener('click', () => {
-                lightbox.classList.remove('active');
-                lightboxImg.src = '';
-            });
-
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    lightbox.classList.remove('active');
+                if (e.key === 'Escape' && modal.classList.contains('show')) {
+                    modal.classList.remove('show');
                 }
             });
 
-            // 初次加载
-            const initialCount = getLoadCount();
-            loadMultipleAlbums(initialCount, false);
+            // ========== 事件绑定 ==========
+            backBtn.addEventListener('click', () => {
+                if (currentView === 'album-detail') {
+                    showAlbumsView();
+                }
+            });
 
+            refreshBtn.addEventListener('click', refreshAlbums);
+            themeToggle.addEventListener('click', toggleTheme);
+            homeLink.addEventListener('click', goToHome);
+
+            // ========== 初始化 ==========
+            // 设置初始主题
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setTheme(prefersDark ? 'dark' : 'light');
+
+            // 先设置一个默认背景图片
+            setInitialBackground();
+            
+            // 获取必应每日一图
+            fetchBingImage();
+            // 每小时更新一次（3600000毫秒 = 1小时）
+            setInterval(fetchBingImage, 3600000);
+
+            // 获取每日一言
+            fetchDailyQuote();
+            // 每小时更新一次
+            setInterval(fetchDailyQuote, 3600000);
+
+            // 加载首页专辑
+            loadInitialAlbums();
         })();
     </script>
-</body>
- <script type="text/javascript">
+</body> <script type="text/javascript">
         // 常量定义
         const MODAL_ID = 'verification-modal';
         const LOCALSTORAGE_KEY = 'verificationExpiration';
@@ -867,4 +1165,5 @@
                 console.error("Error setting localStorage:", e);
             }
         }
-    </script></html>
+    </script>
+</html>
