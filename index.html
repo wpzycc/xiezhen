@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>无朋写真 · 专辑馆</title>
     <style>
         /* ========== 全局样式 & 主题变量 ========== */
@@ -97,25 +97,26 @@
             background-color: var(--header-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            padding: 0.8rem 2rem;
+            padding: 0.6rem 1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: var(--shadow);
             transition: all 0.3s ease;
+            gap: 0.5rem;
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
             flex: 0 0 auto;
         }
 
         .site-title {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 400;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
             background: linear-gradient(135deg, currentColor 0%, #999 100%);
             -webkit-background-clip: text;
@@ -130,31 +131,32 @@
             opacity: 0.8;
         }
 
-        /* 每日一言 - 中间区域 */
+        /* 每日一言 - 中间区域 - 默认显示，手机端隐藏 */
         .quote-container {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 0 20px;
-            max-width: 600px;
-            margin: 0 auto;
+            padding: 0 5px;
+            min-width: 0;
+            max-width: none;
         }
 
         .daily-quote {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--quote-color);
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%;
+            width: 100%;
             font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
             opacity: 0.9;
             transition: opacity 0.3s ease;
             cursor: default;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            line-height: 1.2;
         }
 
         .daily-quote:hover {
@@ -167,14 +169,15 @@
             gap: 4px;
             background: var(--btn-bg);
             color: var(--text-color);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            padding: 4px 12px;
+            padding: 4px 10px;
             border-radius: 30px;
             backdrop-filter: blur(10px);
             transition: all 0.2s ease;
             border: none;
             font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
+            white-space: nowrap;
         }
         .back-btn:hover {
             background: var(--btn-hover);
@@ -184,26 +187,27 @@
         .btn-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             flex: 0 0 auto;
         }
 
         .btn {
             background: var(--btn-bg);
             color: var(--text-color);
-            padding: 6px 14px;
+            padding: 5px 10px;
             border-radius: 30px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 400;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: none;
             font-family: 'KaiTi', '楷体', 'STKaiti', '华文楷体', cursive;
+            white-space: nowrap;
         }
 
         .btn:hover {
@@ -217,8 +221,8 @@
 
         /* 日夜切换按钮 - 完全透明背景 */
         .theme-btn {
-            font-size: 1.2rem;
-            padding: 6px 12px;
+            font-size: 1rem;
+            padding: 5px 8px;
             background: var(--theme-btn-bg);
             border-radius: 25px;
             backdrop-filter: blur(0);
@@ -234,7 +238,7 @@
         /* 换一批按钮 - 完全透明背景 */
         #refreshBatch {
             background: transparent;
-            padding: 6px 16px;
+            padding: 5px 10px;
         }
         
         #refreshBatch:hover {
@@ -244,7 +248,7 @@
         /* ========== 主内容区 - 为固定头部留出空间 ========== */
         .main-content {
             flex: 1;
-            padding: 5rem 2rem 1rem;
+            padding: 4.5rem 1rem 1rem;
             position: relative;
             z-index: 1;
         }
@@ -252,8 +256,8 @@
         /* 专辑网格 - 更美观的卡片布局 */
         .gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1.2rem;
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -305,8 +309,8 @@
             right: 0;
             background: var(--album-meta-bg);
             color: white;
-            padding: 20px 15px 15px;
-            font-size: 0.95rem;
+            padding: 15px 12px 10px;
+            font-size: 0.9rem;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
@@ -322,15 +326,16 @@
             max-width: 70%;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
             font-family: 'Inter', system-ui, sans-serif;
+            font-size: 0.9rem;
         }
 
         .album-count {
             background: rgba(255,255,255,0.2);
             backdrop-filter: blur(5px);
             -webkit-backdrop-filter: blur(5px);
-            padding: 4px 12px;
-            border-radius: 30px;
-            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
             font-weight: 500;
             border: 1px solid rgba(255,255,255,0.1);
         }
@@ -340,20 +345,20 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
             border-bottom: 1px solid rgba(128,128,128,0.2);
         }
         .album-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 400;
             flex: 1;
         }
 
         .photo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -391,7 +396,7 @@
         .load-more-container {
             display: flex;
             justify-content: center;
-            padding: 2.5rem 0 1.5rem;
+            padding: 2rem 0 1.5rem;
             width: 100%;
         }
 
@@ -433,9 +438,9 @@
         /* ========== 返回顶部按钮 - 无圆圈，只保留箭头 ========== */
         #backToTop {
             position: fixed;
-            bottom: 25px;
-            right: 25px;
-            font-size: 24px;
+            bottom: 20px;
+            right: 20px;
+            font-size: 22px;
             font-weight: 300;
             cursor: pointer;
             display: flex;
@@ -470,9 +475,9 @@
         /* ========== 底部 - 与页面融为一体，无分割线 ========== */
         .footer {
             text-align: center;
-            padding: 2rem 2rem 2.5rem;
+            padding: 1.5rem 1rem 2rem;
             color: var(--footer-color);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 300;
             background: transparent;
             margin-top: 0;
@@ -495,29 +500,30 @@
             backdrop-filter: blur(15px);
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1rem;
         }
         .modal.show {
             display: flex;
         }
         .modal-content {
-            max-width: 95vw;
-            max-height: 95vh;
+            max-width: 98vw;
+            max-height: 98vh;
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 0 40px rgba(255,255,255,0.1);
         }
         .modal-close {
             position: absolute;
-            top: 25px;
-            right: 35px;
+            top: 15px;
+            right: 20px;
             color: white;
-            font-size: 45px;
+            font-size: 40px;
             cursor: pointer;
             background: none;
             border: none;
             opacity: 0.7;
             transition: 0.2s;
+            z-index: 210;
         }
         .modal-close:hover {
             opacity: 1;
@@ -527,7 +533,7 @@
         /* 加载提示 */
         .loading {
             text-align: center;
-            padding: 60px;
+            padding: 40px;
             color: var(--footer-color);
             grid-column: 1 / -1;
             font-size: 1rem;
@@ -536,41 +542,76 @@
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
-        /* 响应式调整 */
+        /* 手机端响应式调整 - 隐藏每日一言，卡片布局优化 */
         @media (max-width: 768px) {
             .header {
-                padding: 0.7rem 1rem;
+                padding: 0.5rem 0.8rem;
+                justify-content: space-between;
             }
             .site-title {
-                font-size: 1.2rem;
+                font-size: 1rem;
             }
+            /* 手机端隐藏每日一言 */
             .quote-container {
-                padding: 0 10px;
+                display: none;
             }
-            .daily-quote {
-                font-size: 0.7rem;
+            .btn-group {
+                gap: 4px;
             }
             .btn {
-                padding: 5px 10px;
-                font-size: 0.8rem;
+                padding: 4px 8px;
+                font-size: 0.7rem;
             }
             .theme-btn {
-                font-size: 1.1rem;
-                padding: 5px 10px;
+                font-size: 0.9rem;
+                padding: 4px 6px;
             }
             .main-content {
-                padding: 4.5rem 1rem 1rem;
+                padding: 4rem 0.8rem 0.8rem;
             }
             .gallery {
-                gap: 1.2rem;
+                gap: 0.8rem;
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+            .album-meta {
+                padding: 10px 8px 8px;
+            }
+            .album-title {
+                font-size: 0.8rem;
+            }
+            .album-count {
+                padding: 2px 6px;
+                font-size: 0.6rem;
             }
             #backToTop {
-                font-size: 22px;
-                bottom: 20px;
-                right: 20px;
+                font-size: 20px;
+                bottom: 15px;
+                right: 15px;
             }
             .footer {
-                padding: 1.5rem 1rem 2rem;
+                padding: 1rem 0.8rem 1.5rem;
+                font-size: 0.7rem;
+            }
+            .photo-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 0.8rem;
+            }
+            .album-header h2 {
+                font-size: 1rem;
+            }
+        }
+
+        /* 超小屏设备优化 */
+        @media (max-width: 480px) {
+            .site-title {
+                font-size: 0.9rem;
+            }
+            .btn {
+                padding: 3px 6px;
+                font-size: 0.65rem;
+            }
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
         }
     </style>
@@ -588,7 +629,7 @@
             <span class="site-title" id="homeLink">无朋写真馆</span>
         </div>
         
-        <!-- 每日一言 - 中间区域 -->
+        <!-- 每日一言 - 中间区域 - 仅在PC端显示，手机端通过CSS隐藏 -->
         <div class="quote-container">
             <div class="daily-quote" id="dailyQuote">一图一世界，一念一菩提</div>
         </div>
@@ -627,8 +668,14 @@
             const BING_API = 'https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN';
             // 使用代理解决跨域问题
             const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-            const ALBUMS_PER_PAGE = 20;
-            const LOAD_MORE_COUNT = 8;
+            
+            // 根据设备类型动态设置数量
+            // 检测是否为移动设备
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            
+            // 电脑端20张，手机端8张
+            const ALBUMS_PER_PAGE = isMobile ? 8 : 20;
+            const LOAD_MORE_COUNT = isMobile ? 8 : 8; // 加载更多保持8张
 
             // 状态管理
             let currentAlbums = [];
@@ -659,12 +706,27 @@
                 'https://bing.com/th?id=OHR.NorwayMoose_EN-CN7905897383_UHD.jpg'
             ];
 
+            // 监听窗口大小变化，重新加载不同数量的专辑
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    const newIsMobile = window.innerWidth <= 768;
+                    const currentIsMobile = isMobile;
+                    
+                    // 如果设备类型改变，重新加载
+                    if (newIsMobile !== currentIsMobile) {
+                        location.reload();
+                    }
+                }, 250);
+            });
+
             // ========== 处理图片URL，使用代理 ==========
-            // 处理专辑中的图片URL，将telegra.ph的图片替换为代理地址
+            // 处理专辑中的图片URL，将telegra.ph的图片替换为新的代理地址
             function processImageUrl(url) {
                 if (url && url.includes('telegra.ph')) {
-                    // 替换为代理地址
-                    return url.replace('https://telegra.ph', 'http://103.178.56.182/telegraph');
+                    // 替换为新的二级域名代理
+                    return url.replace('https://telegra.ph', 'https://tg.wpzy.cc');
                 }
                 return url;
             }
@@ -961,7 +1023,7 @@
 
             // ========== 返回顶部功能 ==========
             window.addEventListener('scroll', () => {
-                if (window.scrollY > 300) {
+                if (window.scrollY > 200) {
                     backToTop.classList.add('visible');
                 } else {
                     backToTop.classList.remove('visible');
@@ -1019,7 +1081,7 @@
             loadInitialAlbums();
         })();
     </script>
-</body> <script type="text/javascript">
+</body>  <script type="text/javascript">
         // 常量定义
         const MODAL_ID = 'verification-modal';
         const LOCALSTORAGE_KEY = 'verificationExpiration';
